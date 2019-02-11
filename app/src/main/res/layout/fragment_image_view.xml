@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <Switch
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/sw_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -12,6 +12,9 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:elevation="2dp"
         android:visibility="gone"
+        app:civ_border_width="@dimen/cir_image_border"
+        app:civ_border_color="@color/cir_image_border"
+        app:civ_circle_background_color="@color/cir_image_background"
         />
 
     <user.com.translator.common.TouchImageView

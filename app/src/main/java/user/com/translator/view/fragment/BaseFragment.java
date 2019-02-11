@@ -1,5 +1,6 @@
 package user.com.translator.view.fragment;
 
+import android.arch.lifecycle.ViewModel;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -9,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import user.com.translator.interf.IScreen;
 
-public abstract class BaseFragment extends Fragment implements IScreen {
+public abstract class BaseFragment<T extends ViewModel> extends Fragment implements IScreen<T> {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {

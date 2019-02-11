@@ -33,8 +33,8 @@ public class CommonList extends ConstraintLayout {
         super(context, attrs, defStyleAttr);
         View v = LayoutInflater.from(context).inflate(R.layout.common_list, this);
         mRecyclerView = v.findViewById(R.id.recycler_view);
-        mScrollListener = new ScrollListener();
-        mRecyclerView.addOnScrollListener(mScrollListener);
+//        mScrollListener = new ScrollListener();
+//        mRecyclerView.addOnScrollListener(mScrollListener);
     }
 
     public void setData(List mDatas, ICommonListClickListener mListener) {
@@ -49,5 +49,13 @@ public class CommonList extends ConstraintLayout {
 
     public void notifyDataSetChanged() {
         mAdapter.notifyDataSetChanged();
+    }
+
+    public void scrollTo(int position) {
+        mRecyclerView.scrollToPosition(position);
+    }
+
+    public void smoothScrollTo(int position) {
+        mRecyclerView.smoothScrollToPosition(position);
     }
 }

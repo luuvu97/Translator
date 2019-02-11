@@ -3,4 +3,9 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="colorGreen">@android:color/holo_green_light</color>
+
+    <color name="cir_image_background">#FF222222</color>
+    <color name="cir_image_border">#CCCCCC</color>
+
 </resources>

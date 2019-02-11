@@ -2,38 +2,30 @@ package user.com.translator.model.logic;
 
 import user.com.translator.R;
 import user.com.translator.interf.IListItem;
+import user.com.translator.model.db.LanguageDbo;
 
-public class Language extends IListItem {
-    public String code;
-    public String englishName;
-    public String nativeName;
+public class Language implements IListItem {
 
-    public Language(String code, String englishName, String nativeName) {
-        this.code = code;
-        this.englishName = englishName;
-        this.nativeName = nativeName;
+    private LanguageDbo mLanguage;
+    private boolean mIsSelected;
+
+    public Language(LanguageDbo language, boolean isSelected) {
+        this.mLanguage = language;
+        this.mIsSelected = isSelected;
     }
 
-    public static Language getDefault() {
-        return new Language("", "Auto detect", "");
+    public String getCode() {
+        return mLanguage.getCode();
     }
 
-    public void setDetectLang(String lang) {
-        code = lang.toUpperCase();
-        englishName = "Detect(" + code + ")";
-    }
 
-    @Override
-    public String toString() {
-       return getTitle();
+    public boolean isSelected() {
+        return mIsSelected;
     }
 
     @Override
     public String getTitle() {
-        if (code == null || code.isEmpty()) {
-            return englishName;
-        }
-        return "" + nativeName + "(" + code + ")" + " - " + englishName;
+        return mLanguage.getEnglishName();
     }
 
     @Override

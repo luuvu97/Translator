@@ -1,5 +1,5 @@
 package user.com.translator.interf;
 
-public interface ICommonListClickListener {
-    public void onListItemClicked(int position);
+public interface ICommonListClickListener<T extends IListItem> {
+    public void onListItemClicked(T item, int position);
 }

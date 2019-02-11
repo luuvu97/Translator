@@ -6,7 +6,7 @@ import android.view.View;
 
 import user.com.translator.interf.IListItem;
 
-public class BaseViewHolder extends RecyclerView.ViewHolder {
+public class BaseViewHolder<T extends IListItem> extends RecyclerView.ViewHolder {
 
     public BaseViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -17,7 +17,7 @@ public class BaseViewHolder extends RecyclerView.ViewHolder {
 
     }
 
-    public void onBindViewHolder(IListItem item) {
+    public void onBindViewHolder(T item) {
 
     }
 }

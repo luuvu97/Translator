@@ -7,40 +7,26 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import user.com.translator.model.logic.Language;
+import user.com.translator.model.db.LanguageDbo;
 
 public class ParseJSON {
 
-    private static final String LANG_NAME = "name";
-    private static final String LANG_NATIVE_NAME = "nativeName";
     private static final String TEXT = "text";
     private static final String LANG = "lang";
-    public static final int RESPONE_LANG_SIZE = 2;
 
-    /*
-    * "ab":{
-        "name":"Abkhaz",
-        "nativeName":"аҧсуа"
-    }
-    * */
-    public static ArrayList<Language> parseLanguage(String content){
-        ArrayList<Language> list = new ArrayList<Language>();
-        list.add(Language.getDefault());
+    public static ArrayList<LanguageDbo> parseLanguage(String content){
+        ArrayList<LanguageDbo> list = new ArrayList<LanguageDbo>();
         try {
             JSONObject obj = null;
             obj = new JSONObject(content);
             Iterator itr = obj.keys();
             String key = null;
-            String code, englishName, nativeName;
+            String code, englishName;
             while(itr.hasNext()) {
                 key = (String)itr.next();
-                if(key != null){
-                    JSONObject property = new JSONObject(obj.getString(key));
-                    code = key;
-                    englishName = property.getString(LANG_NAME);
-                    nativeName = property.getString(LANG_NATIVE_NAME);
-                    list.add(new Language(code.toUpperCase(), englishName, nativeName));
-                }
+                code = key;
+                englishName = obj.getString(key);
+                list.add(new LanguageDbo(code.toUpperCase(), englishName));
             }
         } finally {
             return list;

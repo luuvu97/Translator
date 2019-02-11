@@ -9,35 +9,37 @@
         android:id="@+id/iv_arrow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@drawable/ic_arrow_left"
+        android:background="@drawable/ic_arrow_opposite"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         />
 
-    <Spinner
-        android:id="@+id/sp_lang_form"
+    <TextView
+        android:id="@+id/tv_lang_form"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:spinnerMode="dialog"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/iv_arrow"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:gravity="center"
         />
 
-    <Spinner
-        android:id="@+id/sp_lang_to"
+    <TextView
+        android:id="@+id/tv_lang_to"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:spinnerMode="dropdown"
         app:layout_constraintStart_toEndOf="@id/iv_arrow"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:background="@android:color/transparent"
+        android:textColor="@android:color/white"
+        android:gravity="center"
         />
 
 </android.support.constraint.ConstraintLayout>

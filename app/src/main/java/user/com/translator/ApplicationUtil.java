@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.util.Log;
 import android.util.SparseArray;
 
 import com.google.android.gms.vision.Frame;
@@ -14,30 +15,34 @@ import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 import user.com.translator.common.ParseJSON;
-import user.com.translator.model.logic.Language;
+import user.com.translator.model.db.LanguageDbo;
 
 public class ApplicationUtil {
 
-    public static List<Language> getAllLang(Context context) {
-        List<Language> list = null;
+    private static final String TAG = "ApplicationUtil";
+
+    public static List<LanguageDbo> getAllLang(Context context) {
+        List<LanguageDbo> list = null;
         try {
-            InputStream is = context.getAssets().open("language.json");
+            InputStream is = context.getAssets().open("languagev2.json");
             int size = is.available();
             byte[] buffer = new byte[size];
             is.read(buffer);
             is.close();
             list = ParseJSON.parseLanguage(new String(buffer, "UTF-8"));
-            Collections.sort(list, new Comparator<Language>() {
+            Collections.sort(list, new Comparator<LanguageDbo>() {
                 @Override
-                public int compare(Language o1, Language o2) {
-                    return o1.nativeName.compareToIgnoreCase(o2.nativeName);
+                public int compare(LanguageDbo o1, LanguageDbo o2) {
+                    return o1.getEnglishName().compareToIgnoreCase(o2.getEnglishName());
                 }
             });
+            list.add(0, LanguageDbo.getDefault());
         } finally {
             return list;
         }
@@ -49,29 +54,26 @@ public class ApplicationUtil {
         return textRecognizer.detect(frame);
     }
 
-    public static Bitmap getOverlayBitmap(SparseArray<TextBlock> items, Bitmap origin) {
+    public static Bitmap getOverlayBitmap(SparseArray<TextBlock> items, List<String> translateItems, Bitmap origin) {
         Bitmap bitmap = Bitmap.createBitmap(origin.getWidth(), origin.getHeight(), origin.getConfig());
         Canvas canvas = new Canvas(bitmap);
 
         canvas.drawBitmap(origin, new Matrix(), null);
 
         Paint paint = new Paint();
-        paint.setColor(0xCC444444);
+        paint.setColor(DefineVar.COLOR_OVERLAY_BACKGROUND);
         canvas.drawRect(new Rect(0, 0, origin.getWidth(), origin.getHeight()), paint);
 
-        drawText(canvas, items, null);
+        drawText(canvas, mirgate(items), translateItems);
 
         return bitmap;
     };
 
-    private static void drawText(Canvas canvas, SparseArray<TextBlock> items, List<String> translateText) {
+    private static void drawText(Canvas canvas, List<Text> items, List<String> translateText) {
         Paint paint = new Paint();
-        paint.setColor(0xFFFFFFFF);
-        for(int i = 0; i< items.size(); i++){
-            TextBlock item = (TextBlock) items.valueAt(i);
-            for (Text line : item.getComponents()) {
-                drawLine(paint, canvas, line, line.getValue());
-            }
+        paint.setColor(DefineVar.COLOR_OVERLAY_TEXT_COLOR);
+        for(int i = 0; i < items.size(); ++i) {
+            drawLine(paint, canvas, items.get(i), translateText.get(i));
         }
     }
 
@@ -79,12 +81,37 @@ public class ApplicationUtil {
         Rect rect = line.getBoundingBox();
         int length = line.getValue().length();
 
-        int calHeight = rect.bottom - rect.top;
-        int calWidth =  (rect.right - rect.left) / length;
+        int calHeight = rect.height() * 3 / 4;
+//        int calWidth =  rect.width() * 2 / length;
 
-        int textSize = Math.max(calHeight, calWidth);
+        int textSize = calHeight;
         paint.setTextSize(textSize);
 
-        canvas.drawText(line.getValue(), rect.left + textSize / 3, rect.bottom, paint);
+        int baseLineYAxis = (rect.bottom + rect.top) / 2 + textSize / 2;
+
+        Log.i(TAG, "Draw: " + rect.width() + " - " + rect.height() + " - " + textSize + " - " + rect.left + " - " + rect.top + " - " + rect.bottom);
+        canvas.drawText(" " + translateText, rect.left, baseLineYAxis, paint);
+    }
+
+    public static String collect(SparseArray<TextBlock> items) {
+        StringBuilder builder = new StringBuilder();
+        for(int i= 0; i < items.size(); i++) {
+            TextBlock block = items.valueAt(i);
+            for (Text line : block.getComponents()) {
+                builder.append(line.getValue()).append("\n");
+            }
+        }
+        return builder.toString();
+    }
+
+    private static List<Text> mirgate(SparseArray<TextBlock> items) {
+        List<Text> lines = new ArrayList<>();
+        for(int i = 0; i< items.size(); i++){
+            TextBlock item = (TextBlock) items.valueAt(i);
+            for (Text line : item.getComponents()) {
+                lines.add(line);
+            }
+        }
+        return lines;
     }
 }

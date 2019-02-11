@@ -1,4 +1,4 @@
-package user.com.translator.common.list;
+package user.com.translator.common.viewholder;
 
 import android.view.View;
 

@@ -1,9 +1,9 @@
 package user.com.translator.interf;
 
-public abstract class IListItem {
+public interface IListItem {
 
-    public abstract String getTitle();
+    public String getTitle();
 
-    public abstract int getLayoutId();
+    public int getLayoutId();
 
 }

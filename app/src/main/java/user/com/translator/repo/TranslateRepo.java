@@ -1,6 +1,11 @@
-package user.com.translator.common;
+package user.com.translator.repo;
 
+import android.app.Application;
+import android.graphics.Bitmap;
 import android.util.Log;
+import android.util.SparseArray;
+
+import com.google.android.gms.vision.text.TextBlock;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,21 +19,28 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class Translator {
+import user.com.translator.ApplicationUtil;
+import user.com.translator.DefineVar;
+import user.com.translator.common.ParseJSON;
+
+public class TranslateRepo {
     private static final String PREURL = "https://translate.yandex.net/api/v1.5/tr.json/translate?key=";
     private static final String KEY = "trnsl.1.1.20180520T102816Z.aab97a77c0e5adbf.103692e0595910855f714d988c22b4dc43296eb6";
     private static final String FORMAT = "&format=plain"; //for return json; format = html for return http format
     private static final String LANG = "&lang=";
+
+    private static TranslateRepo mInstance;
 
     private String mTextToTranslate;
     private String mResult;
     private String mLangFrom;
     private String mLangTo;
 
-    public Translator(String mTextToTranslate, String mLangFrom, String mLangTo) {
-        this.mTextToTranslate = mTextToTranslate;
-        this.mLangFrom = mLangFrom;
-        this.mLangTo = mLangTo;
+    public static synchronized TranslateRepo getInstance() {
+        if (mInstance == null) {
+            mInstance = new TranslateRepo();
+        }
+        return mInstance;
     }
 
     private String getUrl() {
@@ -40,7 +52,7 @@ public class Translator {
             builder.append(LANG).append(mLangFrom).append("-").append(mLangTo);
         }
         builder.append(FORMAT);
-        Log.i("Translator", "Url: " + builder.toString());
+        Log.i("TranslateRepo", "Url: " + builder.toString());
         return builder.toString();
     }
 
@@ -82,13 +94,14 @@ public class Translator {
         }
     }
 
-    public String translate() {
+    public String translate(String mTextToTranslate, String mLangFrom, String mLangTo) {
+        reset(mTextToTranslate, mLangFrom, mLangTo);
         String response = connect();
-        Log.i("Translator", "Translate: " + mTextToTranslate + "\nFrom: " + mLangFrom + " - " + mLangTo);
-        Log.i("Translator", "Response: " + response);
+        Log.i("TranslateRepo", "Translate: " + mTextToTranslate + "\nFrom: " + mLangFrom + " - " + mLangTo);
+        Log.i("TranslateRepo", "Response: " + response);
         ArrayList<String> parsed = ParseJSON.parseTranslate(response);
-        if (parsed != null && parsed.size() == ParseJSON.RESPONE_LANG_SIZE) {
-            mLangFrom = parsed.get(0);
+        if (parsed != null && parsed.size() == DefineVar.RESPONE_LANG_SIZE) {
+            this.mLangFrom = parsed.get(0);
             mResult = parsed.get(1);
         } else {
             mResult = null;
@@ -96,11 +109,28 @@ public class Translator {
         return mResult;
     }
 
-    public List<String> parseResultToLine() {
-        if (mResult != null) {
-            String[] arr = mResult.split("\n");
-            return Arrays.asList(arr);
+    public Bitmap translateImage(Application application, Bitmap originBitmap, String mLangFrom, String mLangTo) {
+        SparseArray<TextBlock> items = ApplicationUtil.detect(application, originBitmap);
+        String textToTranslate = ApplicationUtil.collect(items);
+
+        String result = translate(textToTranslate, mLangFrom, mLangTo);
+        List<String> parseResult = Arrays.asList(result.split("\n"));
+        Bitmap overlay = ApplicationUtil.getOverlayBitmap(items, parseResult, originBitmap);
+        return overlay;
+    }
+
+    public String getLangFrom() {
+        return mLangFrom;
+    }
+
+    private void reset(String mTextToTranslate, String mLangFrom, String mLangTo) {
+        this.mTextToTranslate = mTextToTranslate;
+        if (mLangFrom != null && mLangFrom.equalsIgnoreCase(DefineVar.AUTO_DETECT_LANG_CODE)) {
+            this.mLangFrom = null;
+        } else {
+            this.mLangFrom = mLangFrom.toLowerCase();
         }
-        return null;
+        this.mLangTo = mLangTo.toLowerCase();
+        this.mResult = "";
     }
 }

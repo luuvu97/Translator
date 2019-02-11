@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import java.util.List;
 
 import user.com.translator.common.viewholder.BaseViewHolder;
+import user.com.translator.common.viewholder.ViewHolderProvider;
 import user.com.translator.interf.ICommonListClickListener;
 import user.com.translator.interf.IListItem;
 
@@ -32,13 +33,13 @@ public class CommonAdapter extends RecyclerView.Adapter<BaseViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull BaseViewHolder baseViewHolder, final int position) {
-        IListItem item = (IListItem) mDatas.get(position);
+        final IListItem item = (IListItem) mDatas.get(position);
         baseViewHolder.onBindViewHolder(item);
         if (mListener != null) {
             baseViewHolder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mListener.onListItemClicked(position);
+                    mListener.onListItemClicked(item, position);
                 }
             });
         }
