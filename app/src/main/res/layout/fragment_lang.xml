@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#AA000000">
+    android:background="#88000000"
+    >
 
     <ImageView
         android:id="@+id/iv_arrow"

@@ -7,14 +7,18 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.widget.ImageView;
 
 import java.io.IOException;
 
 import user.com.translator.R;
+import user.com.translator.view.fragment.CameraFragment;
+import user.com.translator.view.fragment.CameraVideoFragment;
 import user.com.translator.view.fragment.ImageViewFragment;
 import user.com.translator.view.fragment.LangFragment;
 import user.com.translator.viewmodel.MainVM;
@@ -25,7 +29,26 @@ public class MainActivity extends BaseActivity<MainVM> {
 
     private ImageView mIvGallery;
     private ImageViewFragment mImageViewFragment;
+    private ImageView mIvCamera;
+
     private LangFragment mTransLangFragment;
+    private CameraFragment mCameraFragment;
+    private CameraFragment.OnTakeImageListener mCameraListener = new CameraVideoFragment.OnTakeImageListener() {
+        @Override
+        public void onImageAvailable(final Bitmap bitmap) {
+            showCamera(false);
+
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    mImageViewFragment.onNewImage(bitmap);
+                    getViewModel().detect(bitmap);
+                }
+            }, 200);
+        }
+    };
+
+    private boolean mIsCameraShow;
 
     private final String[] permissions = new String[]{
             Manifest.permission.INTERNET,
@@ -35,6 +58,7 @@ public class MainActivity extends BaseActivity<MainVM> {
     @Override
     public void bindLayout(View view) {
         mIvGallery = findViewById(R.id.iv_photo);
+        mIvCamera = findViewById(R.id.iv_camera);
     }
 
     @Override
@@ -51,21 +75,36 @@ public class MainActivity extends BaseActivity<MainVM> {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestPermissions(permissions, REQUEST_CODE_GALLERY);
-        mImageViewFragment = new ImageViewFragment();
         mTransLangFragment = new LangFragment();
-        getSupportFragmentManager().beginTransaction().replace(R.id.main_content, mImageViewFragment).commit();
+
+        showCamera(true);
         getSupportFragmentManager().beginTransaction().replace(R.id.bottom_fragment, mTransLangFragment).commit();
+        mCameraFragment.setImageListener(mCameraListener);
         mIvGallery.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(intent, REQUEST_CODE_GALLERY);
+                showCamera(false);
             }
         });
+        mIvCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mIsCameraShow) {
+                    mCameraFragment.takePicture();
+                } else {
+                    showCamera(true);
+                }
+            }
+        });
+
         getViewModel().getOverlayBitmap().observe(this, new Observer<Bitmap>() {
             @Override
             public void onChanged(@Nullable Bitmap overlayBitmap) {
-                mImageViewFragment.onOverlayImage(overlayBitmap);
+                if (mImageViewFragment != null) {
+                    mImageViewFragment.onOverlayImage(overlayBitmap);
+                }
             }
         });
         getViewModel().getLangChanged().observe(this, new Observer<Boolean>() {
@@ -74,6 +113,20 @@ public class MainActivity extends BaseActivity<MainVM> {
                 getViewModel().detect();
             }
         });
+    }
+
+    void showCamera(boolean isShowCam) {
+        mIsCameraShow = isShowCam;
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        if (isShowCam) {
+            mCameraFragment = new CameraFragment();
+            transaction.replace(R.id.main_content, mCameraFragment);
+        } else {
+            mImageViewFragment = new ImageViewFragment();
+            transaction.replace(R.id.main_content, mImageViewFragment);
+        }
+        transaction.addToBackStack(null);
+        transaction.commit();
     }
 
     @Override
@@ -88,6 +141,8 @@ public class MainActivity extends BaseActivity<MainVM> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        } else {
+            showCamera(true);
         }
     }
 }

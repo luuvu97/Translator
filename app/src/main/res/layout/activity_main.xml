@@ -24,10 +24,10 @@
         />
 
     <de.hdodenhof.circleimageview.CircleImageView
-        android:id="@+id/iv_photo"
+        android:id="@+id/iv_camera"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_photo"
+        android:src="@drawable/ic_camera"
         android:contentDescription=""
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -36,6 +36,15 @@
         app:civ_border_width="@dimen/cir_image_border"
         app:civ_border_color="@color/cir_image_border"
         app:civ_circle_background_color="@color/cir_image_background"
+        />
+
+    <ImageView
+        android:id="@+id/iv_photo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/bottom_fragment"
+        app:layout_constraintStart_toStartOf="parent"
+        android:background="@drawable/ic_photo"
         />
 
 </android.support.constraint.ConstraintLayout>
