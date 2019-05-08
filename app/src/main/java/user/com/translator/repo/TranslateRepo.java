@@ -2,6 +2,8 @@ package user.com.translator.repo;
 
 import android.app.Application;
 import android.graphics.Bitmap;
+import android.os.Handler;
+import android.os.HandlerThread;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -29,7 +31,11 @@ public class TranslateRepo {
     private static final String FORMAT = "&format=plain"; //for return json; format = html for return http format
     private static final String LANG = "&lang=";
 
+    private final String THREADNAME = "TranslateHandleThread";
+
     private static TranslateRepo mInstance;
+    private HandlerThread mHandlerThread;
+    private Handler mHandler;
 
     private String mTextToTranslate;
     private String mResult;
@@ -41,6 +47,23 @@ public class TranslateRepo {
             mInstance = new TranslateRepo();
         }
         return mInstance;
+    }
+
+    public void destroy() {
+        if (mHandlerThread != null) {
+            mHandlerThread.quit();
+        }
+        mHandlerThread = null;
+        mHandler = null;
+    }
+
+    public void postRunable(Runnable runnable) {
+        if (mHandlerThread == null) {
+            mHandlerThread = new HandlerThread(THREADNAME);
+            mHandlerThread.start();
+            mHandler = new Handler(mHandlerThread.getLooper());
+        }
+        mHandler.post(runnable);
     }
 
     private String getUrl() {
@@ -109,10 +132,16 @@ public class TranslateRepo {
         return mResult;
     }
 
-    public Bitmap translateImage(Application application, Bitmap originBitmap, String mLangFrom, String mLangTo) {
-        SparseArray<TextBlock> items = ApplicationUtil.detect(application, originBitmap);
-        String textToTranslate = ApplicationUtil.collect(items);
+    public Bitmap getOcrBitmap(Application application, Bitmap originBitmap, SparseArray<TextBlock> items) {
+        return ApplicationUtil.getOverlayBitmap(items, null, originBitmap);
+    }
 
+    public SparseArray<TextBlock> detect(Application application, Bitmap originBitmap) {
+        return ApplicationUtil.detect(application , originBitmap);
+    }
+
+    public Bitmap translateImage(Application application, Bitmap originBitmap, SparseArray<TextBlock> items, String mLangFrom, String mLangTo) {
+        String textToTranslate = ApplicationUtil.collect(items);
         String result = translate(textToTranslate, mLangFrom, mLangTo);
         List<String> parseResult = Arrays.asList(result.split("\n"));
         Bitmap overlay = ApplicationUtil.getOverlayBitmap(items, parseResult, originBitmap);

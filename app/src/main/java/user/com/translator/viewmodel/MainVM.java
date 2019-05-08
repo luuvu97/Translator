@@ -5,7 +5,12 @@ import android.arch.lifecycle.AndroidViewModel;
 import android.arch.lifecycle.MutableLiveData;
 import android.graphics.Bitmap;
 import android.support.annotation.NonNull;
+import android.util.Log;
+import android.util.SparseArray;
 
+import com.google.android.gms.vision.text.TextBlock;
+
+import user.com.translator.ApplicationUtil;
 import user.com.translator.DefineVar;
 import user.com.translator.repo.TranslateLangRepo;
 import user.com.translator.repo.TranslateRepo;
@@ -46,7 +51,7 @@ public class MainVM extends AndroidViewModel {
     private class BitmapLiveData extends MutableLiveData<Bitmap> {
 
         private void detect(final Bitmap originBitmap) {
-            new Thread(new Runnable() {
+            mTranslateRepo.postRunable(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -54,7 +59,12 @@ public class MainVM extends AndroidViewModel {
                         String langFrom = mLangRepo.getLangFrom().getCode();
                         String langTo = mLangRepo.getLangTo().getCode();
 
-                        postValue(mTranslateRepo.translateImage(getApplication(), originBitmap, langFrom, langTo));
+                        Log.i("MainVM", "Detecting");
+                        SparseArray<TextBlock> items = mTranslateRepo.detect(getApplication(), originBitmap);
+
+                        Log.i("MainVM", "Translating");
+                        postValue(mTranslateRepo.getOcrBitmap(getApplication(), originBitmap, items));
+                        postValue(mTranslateRepo.translateImage(getApplication(), originBitmap, items, langFrom, langTo));
 
                         if (langFrom.equalsIgnoreCase(DefineVar.AUTO_DETECT_LANG_CODE)) {
                             mLangRepo.setAutoDetectLang(mTranslateRepo.getLangFrom());
@@ -64,7 +74,13 @@ public class MainVM extends AndroidViewModel {
                         e.printStackTrace();
                     }
                 }
-            }).start();
+            });
         }
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        mTranslateRepo.destroy();
     }
 }

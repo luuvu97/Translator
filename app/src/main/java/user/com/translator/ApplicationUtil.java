@@ -6,6 +6,7 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.util.Log;
 import android.util.SparseArray;
 
@@ -65,15 +66,31 @@ public class ApplicationUtil {
         canvas.drawRect(new Rect(0, 0, origin.getWidth(), origin.getHeight()), paint);
 
         drawText(canvas, mirgate(items), translateItems);
-
+        /*Todo: remove it*/
+//        drawBoundingBox(canvas, items);
         return bitmap;
     };
+
+    private static void drawBoundingBox(Canvas canvas, SparseArray<TextBlock> items) {
+        Paint paint = new Paint();
+        paint.setColor(DefineVar.COLOR_OVERLAY_BACKGROUND);
+        for(int i= 0; i < items.size(); i++) {
+            TextBlock block = items.valueAt(i);
+            canvas.drawRect(block.getBoundingBox(), paint);
+        }
+    }
 
     private static void drawText(Canvas canvas, List<Text> items, List<String> translateText) {
         Paint paint = new Paint();
         paint.setColor(DefineVar.COLOR_OVERLAY_TEXT_COLOR);
+        paint.setTypeface(Typeface.DEFAULT);
+
         for(int i = 0; i < items.size(); ++i) {
-            drawLine(paint, canvas, items.get(i), translateText.get(i));
+            if (translateText != null) {
+                drawLine(paint, canvas, items.get(i), translateText.get(i));
+            } else {
+                drawLine(paint, canvas, items.get(i), items.get(i).getValue());
+            }
         }
     }
 
@@ -89,7 +106,7 @@ public class ApplicationUtil {
 
         int baseLineYAxis = (rect.bottom + rect.top) / 2 + textSize / 2;
 
-        Log.i(TAG, "Draw: " + rect.width() + " - " + rect.height() + " - " + textSize + " - " + rect.left + " - " + rect.top + " - " + rect.bottom);
+        Log.i(TAG, "Draw: " + translateText + " at: " + rect.width() + " - " + rect.height() + " - " + textSize + " - " + rect.left + " - " + rect.top + " - " + rect.bottom);
         canvas.drawText(" " + translateText, rect.left, baseLineYAxis, paint);
     }
 
